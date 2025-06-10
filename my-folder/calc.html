@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculator</title>
+  <style>
+    /* 전체 배경 및 정렬 스타일 */
+    body {
+      background-color: #222;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    /* 계산기 전체 컨테이너 */
+    .calculator {
+      width: 300px;
+    }
+
+    /* 표시창 스타일 */
+    .display {
+      background-color: black;
+      color: white;
+      text-align: right;
+      font-size: 2em;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      min-height: 40px;
+      word-wrap: break-word;
+    }
+
+    /* 버튼 영역 그리드 구성 */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    /* 기본 버튼 스타일 */
+    button {
+      font-size: 1.5em;
+      padding: 20px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* 숫자 버튼 스타일 */
+    .number {
+      border-radius: 50%;
+      background-color: #444;
+      color: white;
+    }
+
+    /* 연산자 버튼 스타일 */
+    .operator {
+      background-color: orange;
+      color: white;
+      border-radius: 8px;
+    }
+
+    /* AC, +/-, % 등의 특수 기능 버튼 스타일 */
+    .special {
+      background-color: gray;
+      color: white;
+      border-radius: 50%;
+    }
+
+    /* = 버튼은 조금 더 특별하게 표현 */
+    .equals {
+      background-color: orange;
+      color: white;
+      border-radius: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <!-- 계산 결과 및 수식 표시창 -->
+    <div class="display" id="display">0</div>
+    
+    <!-- 버튼 영역 -->
+    <div class="buttons">
+      <!-- 특수 기능 버튼들 -->
+      <button class="special" onclick="clearDisplay()">AC</button>
+      <button class="special" onclick="toggleSign()">+/-</button>
+      <button class="special" onclick="appendOperator('%')">%</button>
+      <button class="operator" onclick="appendOperator('/')">÷</button>
+
+      <!-- 숫자 버튼 및 연산자 -->
+      <button class="number" onclick="appendNumber('7')">7</button>
+      <button class="number" onclick="appendNumber('8')">8</button>
+      <button class="number" onclick="appendNumber('9')">9</button>
+      <button class="operator" onclick="appendOperator('*')">×</button>
+
+      <button class="number" onclick="appendNumber('4')">4</button>
+      <button class="number" onclick="appendNumber('5')">5</button>
+      <button class="number" onclick="appendNumber('6')">6</button>
+      <button class="operator" onclick="appendOperator('-')">−</button>
+
+      <button class="number" onclick="appendNumber('1')">1</button>
+      <button class="number" onclick="appendNumber('2')">2</button>
+      <button class="number" onclick="appendNumber('3')">3</button>
+      <button class="operator" onclick="appendOperator('+')">+</button>
+
+      <!-- 이모지 버튼(테스트용) / 0 / 소수점 / = -->
+      <button class="special" onclick="alert('계산기 기능입니다.')">📱</button>
+      <button class="number" onclick="appendNumber('0')">0</button>
+      <button class="number" onclick="appendNumber('.')">.</button>
+      <button class="equals" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    // 현재 입력 값을 저장할 변수
+    let currentInput = '';
+
+    // 표시창 업데이트 함수
+    function updateDisplay(value) {
+      document.getElementById('display').textContent = value;
+    }
+
+    // 숫자 입력 함수
+    function appendNumber(number) {
+      currentInput += number;
+      updateDisplay(currentInput);
+    }
+
+    // 연산자 입력 함수 (%, +, -, *, /)
+    function appendOperator(operator) {
+      if (operator === '%') {
+        // 퍼센트는 현재 값을 100으로 나눔
+        if (currentInput) {
+          currentInput = String(parseFloat(currentInput) / 100);
+          updateDisplay(currentInput);
+        }
+      } else {
+        // 공백 처리 및 중복 연산자 방지
+        if (currentInput === '') return;
+        const lastChar = currentInput.trim().slice(-1);
+        if ('+-*/'.includes(lastChar)) return;
+        currentInput += ' ' + operator + ' ';
+        updateDisplay(currentInput);
+      }
+    }
+
+    // 부호 전환 함수 (+/-)
+    function toggleSign() {
+      try {
+        let value = eval(currentInput);
+        value = -value;
+        currentInput = String(value);
+        updateDisplay(currentInput);
+      } catch {
+        updateDisplay('Error');
+      }
+    }
+
+    // AC 버튼 처리 함수
+    function clearDisplay() {
+      currentInput = '';
+      updateDisplay('0');
+    }
+
+    // = 버튼 처리 함수
+    function calculate() {
+      try {
+        const result = eval(currentInput);
+        updateDisplay(result);
+        currentInput = String(result); // 연속 계산 가능하게 업데이트
+      } catch (error) {
+        updateDisplay('Error');
+      }
+    }
+
+    // 키보드 입력 처리 함수
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+
+      if (!isNaN(key) || key === '.') {
+        // 숫자나 소수점은 appendNumber로
+        appendNumber(key);
+      } else if ('+-*/'.includes(key)) {
+        // 연산자 키 입력
+        appendOperator(key);
+      } else if (key === 'Enter') {
+        calculate();
+      } else if (key === 'Backspace') {
+        // 백스페이스는 마지막 글자 제거
+        currentInput = currentInput.trim().slice(0, -1);
+        updateDisplay(currentInput || '0');
+      }
+    });
+  </script>
+</body>
+</html> 
